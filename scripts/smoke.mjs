@@ -121,15 +121,27 @@ const readingOrder = JSON.parse(
   (await js(`JSON.stringify((() => {
     const children = [...document.querySelector("#main").children];
     const mapIndex = children.findIndex(el => el.classList.contains("map-priority-row"));
+    const incidentIndex = children.findIndex(el => el.classList.contains("historical-map-section"));
     const comparisonIndex = children.findIndex(el => el.classList.contains("comparison"));
     const advisory = document.querySelector("#main > .area-advisory");
+    const incidentLegend = document.querySelector(".historical-map-section .legend")?.innerText ?? "";
+    const response = document.querySelector(".response-readiness")?.innerText ?? "";
     return {
-      comparisonAfterMap: mapIndex >= 0 && comparisonIndex > mapIndex,
+      incidentMapAfterForecast: mapIndex >= 0 && incidentIndex > mapIndex,
+      comparisonAfterIncidentMap: comparisonIndex > incidentIndex,
+      incidentHasNoSimulatedHazards: /no simulated hazards or asset impacts/i.test(incidentLegend) &&
+        !/Wind swath|Inundation corridor|Rainfall cell/.test(incidentLegend),
+      shelterIsQualified: /illustrative · unverified/i.test(response) && /Operating status\s+Not verified/i.test(response),
+      authoritiesAreTestOnly: /no live message/i.test(response) && document.querySelectorAll(".authority-list li").length >= 3,
       advisoryVisible: !!advisory && !advisory.closest("details"),
     };
   })())`)) ?? "{}",
 );
-check("map precedes the forecast-versus-real comparison", readingOrder.comparisonAfterMap);
+check("historical incident map follows forecast map", readingOrder.incidentMapAfterForecast);
+check("forecast comparison follows both maps", readingOrder.comparisonAfterIncidentMap);
+check("incident map contains no simulated hazard paint", readingOrder.incidentHasNoSimulatedHazards);
+check("shelter information is visibly qualified", readingOrder.shelterIsQualified);
+check("authority recipients are clearly test-only", readingOrder.authoritiesAreTestOnly);
 check("Gemini advisory is always visible", readingOrder.advisoryVisible);
 
 await js(`document.querySelector(".trust-disclosure").open = true`);

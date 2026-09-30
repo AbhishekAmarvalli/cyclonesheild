@@ -111,7 +111,7 @@ export default function AdvisoryPanel({ run }: Props) {
     : "";
 
   return (
-    <section className="card card--yellow area-advisory">
+    <section id="advisory" className="card card--yellow area-advisory">
       <div className="card-head">
         <h2>Advisory panel — Gemini drafting, review &amp; test dispatch</h2>
         <span className="sub">

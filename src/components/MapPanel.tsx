@@ -15,6 +15,7 @@ import { predictNextStep } from "../lib/prediction";
 import { cycloneSvg, CycloneIcon, kindSvg, SatelliteIcon } from "./icons";
 
 interface Props {
+  mode?: "forecast" | "observed";
   district: District;
   hazards: HazardZone[];
   rows: AssetRow[];
@@ -43,6 +44,7 @@ const SEVERITY_OPACITY: Record<string, number> = {
 };
 
 export default function MapPanel({
+  mode = "forecast",
   district,
   hazards,
   rows,
@@ -207,26 +209,33 @@ export default function MapPanel({
       interactive: false,
     }).addTo(group);
 
-    // hazard footprints
-    for (const h of hazards) {
-      const poly = L.polygon(h.ring.map(ll), {
-        color: KIND_COLOR[h.kind],
-        weight: 1.6,
-        fillColor: KIND_COLOR[h.kind],
-        fillOpacity: SEVERITY_OPACITY[h.severity] ?? 0.2,
-        opacity: 0.95,
-      });
-      poly.bindTooltip(
-        `<b>${h.label}</b><br/>${h.detail}<br/><span style="opacity:.7">${h.severity.toUpperCase()} · ${h.provenance.status}</span>`,
-        { sticky: true, direction: "top" },
-      );
-      poly.addTo(group);
+    // Historical mode intentionally contains no simulated hazard or exposure overlays.
+    if (mode === "forecast") {
+      for (const h of hazards) {
+        const poly = L.polygon(h.ring.map(ll), {
+          color: KIND_COLOR[h.kind],
+          weight: 1.6,
+          fillColor: KIND_COLOR[h.kind],
+          fillOpacity: SEVERITY_OPACITY[h.severity] ?? 0.2,
+          opacity: 0.95,
+        });
+        poly.bindTooltip(
+          `<b>${h.label}</b><br/>${h.detail}<br/><span style="opacity:.7">${h.severity.toUpperCase()} · ${h.provenance.status}</span>`,
+          { sticky: true, direction: "top" },
+        );
+        poly.addTo(group);
+      }
     }
 
-    // Keep Fani's future observations off the forecast side of the replay map.
-    const trackToShow = scenario.id === "fani-2019"
-      ? scenario.track.slice(0, stepIndex + 1)
-      : scenario.track;
+    // Forecast mode stops at its input time; historical mode shows the complete archived track.
+    const trackToShow = mode === "observed"
+      ? scenario.track
+      : scenario.id === "fani-2019"
+        ? scenario.track.slice(0, stepIndex + 1)
+        : scenario.track;
+    const activeTrackIndex = mode === "observed"
+      ? scenario.track.findIndex((point) => point.label === "Landfall")
+      : stepIndex;
     const trackPts = trackToShow.map((t) => [t.lat, t.lon] as [number, number]);
     L.polyline(trackPts, {
       color: "#202124",
@@ -237,7 +246,7 @@ export default function MapPanel({
     }).addTo(group);
 
     trackToShow.forEach((t, i) => {
-      const active = i === stepIndex;
+      const active = i === activeTrackIndex;
       L.circleMarker([t.lat, t.lon], {
         radius: active ? 7 : 4,
         color: "#202124",
@@ -251,7 +260,9 @@ export default function MapPanel({
         .addTo(group);
     });
 
-    const trend = scenario.id === "fani-2019" ? predictNextStep(scenario, stepIndex) : null;
+    const trend = mode === "forecast" && scenario.id === "fani-2019"
+      ? predictNextStep(scenario, stepIndex)
+      : null;
     if (trend) {
       L.polyline(
         [[scenario.track[stepIndex].lat, scenario.track[stepIndex].lon], [trend.predictedPoint[1], trend.predictedPoint[0]]],
@@ -289,13 +300,15 @@ export default function MapPanel({
       keyboard: false,
     });
     storm.bindTooltip(
-      `Storm centre · ${scenario.track[stepIndex].time} · ${scenario.track[stepIndex].windKt} kt`,
+      mode === "observed"
+        ? `Reported landfall · ${scenario.landfall.place} · reconstructed historical track`
+        : `Storm centre · ${scenario.track[stepIndex].time} · ${scenario.track[stepIndex].windKt} kt`,
       { sticky: true },
     );
     storm.addTo(group);
 
     // linear assets coloured by priority
-    for (const row of rows) {
+    for (const row of mode === "forecast" ? rows : []) {
       if (!row.asset.line) continue;
       L.polyline(row.asset.line.map(ll), {
         color: row.band === "P1" ? "#d93025" : row.band === "P2" ? "#f9ab00" : row.band === "P3" ? "#1a73e8" : "#1e8e3e",
@@ -344,9 +357,11 @@ export default function MapPanel({
       m.addTo(group);
     };
 
-    rows.forEach((r) => pinFor(r.asset, r.band));
-    unexposed.forEach((a) => pinFor(a, null));
-  }, [hazards, rows, unexposed, scenario, stepIndex, selectedId, stormPoint, district, onSelect]);
+    if (mode === "forecast") {
+      rows.forEach((r) => pinFor(r.asset, r.band));
+      unexposed.forEach((a) => pinFor(a, null));
+    }
+  }, [mode, hazards, rows, unexposed, scenario, stepIndex, selectedId, stormPoint, district, onSelect]);
 
   const visibleCount = layerCounts.wind + layerCounts.surge + layerCounts.rainfall;
 
@@ -375,12 +390,16 @@ export default function MapPanel({
   return (    <section className="card card--flush area-map map-wrap">
       <div className="map-head">
         <div className="card-head">
-          <h2>Interactive map</h2>
+          <h2>{mode === "observed" ? "Historical incident map" : "Interactive map"}</h2>
           <span className="sub">
-            {district.name} district · {visibleCount} hazard layers
+            {mode === "observed"
+              ? "Rounded historical center track · no simulated hazard paint"
+              : `${district.name} district · ${visibleCount} hazard layers`}
           </span>
         </div>
 
+        {mode === "forecast" && (
+          <>
         <div className="sat-row" role="group" aria-label="Satellite basemap controls">
           <button
             className={`sat-btn${satOn ? " on" : ""}`}
@@ -484,6 +503,8 @@ export default function MapPanel({
             </button>
           </div>
         )}
+          </>
+        )}
       </div>
 
       <div className="map-stage">
@@ -492,11 +513,13 @@ export default function MapPanel({
             <CycloneIcon size={14} /> {scenario.name}
           </span>
           <span className="banner-pill">
-            Valid {scenario.track[stepIndex].time.replace("T", " ").replace(":00Z", "Z")}
+            {mode === "observed"
+              ? `Landfall · ${scenario.landfall.time.replace("T", " ").replace(":00Z", "Z")}`
+              : `Valid ${scenario.track[stepIndex].time.replace("T", " ").replace(":00Z", "Z")}`}
           </span>
-          <span className="banner-pill">{scenario.track[stepIndex].windKt} kt</span>
+          {mode === "forecast" && <span className="banner-pill">{scenario.track[stepIndex].windKt} kt</span>}
           <span className="banner-pill">
-            {scenario.kind === "synthetic" ? "SYNTHETIC INPUT" : "RECORDED SCENARIO"}
+            {mode === "observed" ? "HISTORICAL TRACK" : scenario.kind === "synthetic" ? "SYNTHETIC INPUT" : "RECORDED SCENARIO"}
           </span>
         </div>
 
@@ -504,6 +527,14 @@ export default function MapPanel({
       </div>
 
       <div className="legend">
+        {mode === "observed" ? (
+          <>
+            <span className="item"><span className="sw sw--dashed" />Rounded historical center track</span>
+            <span className="item"><span className="sw sw--observed" />Reported landfall point</span>
+            <span className="item">No simulated hazards or asset impacts shown</span>
+          </>
+        ) : (
+          <>
         <span className="item">
           <span className="sw" style={{ background: "rgba(249,171,0,.35)", borderColor: "#f9ab00" }} />
           Wind swath
@@ -543,6 +574,8 @@ export default function MapPanel({
           <span className="sw sw--dashed" />
           Forecast track — centre positions, not a damage forecast
         </span>
+        )}
+          </>
         )}
       </div>
     </section>

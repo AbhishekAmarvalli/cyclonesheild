@@ -7,6 +7,7 @@ import AssetDetails from "./components/AssetDetails";
 import AdvisoryPanel from "./components/AdvisoryPanel";
 import ComparisonPanel from "./components/ComparisonPanel";
 import TrustPanel from "./components/TrustPanel";
+import ResponseReadiness from "./components/ResponseReadiness";
 import { DISTRICTS, getDistrict } from "./data/districts";
 import { getScenario, scenariosForDistrict } from "./data/scenarios";
 import { assetsForDistrict } from "./data/assets";
@@ -147,8 +148,28 @@ export default function App() {
         </section>
 
         {scenario.id === "fani-2019" && (
+          <section className="historical-map-section" aria-label="Fani observed incident map">
+            <MapPanel
+              mode="observed"
+              district={district}
+              hazards={[]}
+              rows={[]}
+              unexposed={[]}
+              scenario={scenario}
+              stormPoint={[scenario.landfall.lon, scenario.landfall.lat]}
+              stepIndex={landfallIndex(scenario)}
+              selectedId={null}
+              onSelect={() => undefined}
+              layerCounts={{ wind: 0, surge: 0, rainfall: 0 }}
+            />
+          </section>
+        )}
+
+        {scenario.id === "fani-2019" && (
           <ComparisonPanel scenario={scenario} run={run} onStep={setStepIndex} />
         )}
+
+        {scenario.id === "fani-2019" && <ResponseReadiness />}
 
         <TrustPanel />
 
