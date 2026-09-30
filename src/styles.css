@@ -2990,6 +2990,282 @@ h1, h2, h3, h4 {
   margin-bottom: 10px;
 }
 
+.fani-impact-section {
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.fani-impact-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.fani-impact-heading h2 {
+  font-size: 21px;
+  font-weight: 500;
+}
+
+.fani-impact-heading p:last-child {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.fani-impact-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(250px, 0.8fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.fani-impact-map-wrap {
+  min-width: 0;
+}
+
+.fani-impact-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #eaf2f7;
+}
+
+.fani-map-water {
+  fill: #eaf2f7;
+}
+
+.impact-district polygon {
+  stroke: #fff;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.impact-district--severe polygon {
+  fill: #c43b31;
+}
+
+.impact-district--heavy polygon {
+  fill: #e9852c;
+}
+
+.impact-district-label,
+.impact-district-count,
+.impact-landfall-label {
+  paint-order: stroke;
+  stroke: rgba(32, 33, 36, 0.65);
+  stroke-width: 2px;
+  stroke-linejoin: round;
+  fill: #fff;
+  text-anchor: middle;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.impact-district-count {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.impact-landfall-halo {
+  fill: #fff;
+  opacity: 0.95;
+}
+
+.impact-landfall-point {
+  fill: #202124;
+  stroke: #fff;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.impact-landfall-label {
+  text-anchor: start;
+  font-size: 11px;
+}
+
+.fani-impact-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 12px 2px 0;
+  color: #3c4043;
+  font-size: 11px;
+}
+
+.fani-impact-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.impact-swatch {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  border: 1px solid rgba(32, 33, 36, 0.18);
+  border-radius: 3px;
+}
+
+.impact-swatch--severe {
+  background: #c43b31;
+}
+
+.impact-swatch--heavy {
+  background: #e9852c;
+}
+
+.impact-swatch--landfall {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #202124;
+}
+
+.impact-legend-note {
+  color: var(--muted);
+}
+
+.fani-impact-summary {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.impact-total {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.impact-total > span,
+.impact-total > small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.impact-total > strong {
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.impact-count-list {
+  display: grid;
+  gap: 7px;
+}
+
+.impact-count-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.impact-count-row strong {
+  text-align: right;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.impact-blocks {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8fafd;
+}
+
+.impact-blocks strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.impact-blocks p,
+.impact-blocks small,
+.impact-coverage-note,
+.impact-boundary-credit {
+  display: block;
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.impact-coverage-note {
+  margin: 0;
+}
+
+.fani-impact-summary > a {
+  color: #1a73e8;
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.fani-impact-summary > a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 840px) {
+  .fani-impact-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .fani-impact-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .impact-total,
+  .impact-coverage-note,
+  .fani-impact-summary > a,
+  .impact-boundary-credit {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 520px) {
+  .fani-impact-section {
+    padding: 16px 12px;
+  }
+
+  .fani-impact-heading {
+    flex-direction: column;
+  }
+
+  .fani-impact-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .impact-total,
+  .impact-coverage-note,
+  .fani-impact-summary > a,
+  .impact-boundary-credit {
+    grid-column: auto;
+  }
+
+  .impact-district-label {
+    font-size: 16px;
+    stroke-width: 2.5px;
+  }
+
+  .impact-district-count {
+    display: none;
+  }
+}
+
 @media (max-width: 760px) {
   .response-readiness {
     padding: 16px;
@@ -3009,6 +3285,33 @@ h1, h2, h3, h4 {
     flex-direction: column;
   }
 }
+
+  .fani-impact-section {
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 16px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .fani-impact-frame {
+    display: block;
+    width: 100%;
+    height: min(720px, 78vh);
+    min-height: 560px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #f3f4f3;
+  }
+
+  @media (max-width: 640px) {
+    .fani-impact-frame {
+      height: 680px;
+      min-height: 620px;
+    }
+  }
 
 .priority-panel .prio-item:hover {
   border-color: #c6dafc;

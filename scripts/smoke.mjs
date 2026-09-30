@@ -124,13 +124,17 @@ const readingOrder = JSON.parse(
     const incidentIndex = children.findIndex(el => el.classList.contains("historical-map-section"));
     const comparisonIndex = children.findIndex(el => el.classList.contains("comparison"));
     const advisory = document.querySelector("#main > .area-advisory");
-    const incidentLegend = document.querySelector(".historical-map-section .legend")?.innerText ?? "";
+    const incidentFrame = document.querySelector(".fani-impact-frame");
+    const incidentDocument = incidentFrame?.contentDocument;
+    const incidentLegend = incidentDocument?.querySelector(".legend")?.innerText ?? "";
+    const incidentLabel = incidentDocument?.querySelector(".chip.note")?.innerText ?? "";
     const response = document.querySelector(".response-readiness")?.innerText ?? "";
     return {
       incidentMapAfterForecast: mapIndex >= 0 && incidentIndex > mapIndex,
       comparisonAfterIncidentMap: comparisonIndex > incidentIndex,
-      incidentHasNoSimulatedHazards: /no simulated hazards or asset impacts/i.test(incidentLegend) &&
-        !/Wind swath|Inundation corridor|Rainfall cell/.test(incidentLegend),
+      incidentHasNoSimulatedHazards: !!incidentDocument?.querySelector("#map") &&
+        /Not reported as worst-hit/.test(incidentLegend) && /Reported impact · not model output/.test(incidentLabel),
+      reportedDistrictMap: !!incidentDocument?.querySelector(".panel") && /Puri/.test(incidentDocument.querySelector(".panel")?.innerText ?? ""),
       shelterIsQualified: /illustrative · unverified/i.test(response) && /Operating status\s+Not verified/i.test(response),
       authoritiesAreTestOnly: /no live message/i.test(response) && document.querySelectorAll(".authority-list li").length >= 3,
       advisoryVisible: !!advisory && !advisory.closest("details"),
@@ -140,6 +144,7 @@ const readingOrder = JSON.parse(
 check("historical incident map follows forecast map", readingOrder.incidentMapAfterForecast);
 check("forecast comparison follows both maps", readingOrder.comparisonAfterIncidentMap);
 check("incident map contains no simulated hazard paint", readingOrder.incidentHasNoSimulatedHazards);
+check("Fani impact map shows district polygons and reported counts", readingOrder.reportedDistrictMap);
 check("shelter information is visibly qualified", readingOrder.shelterIsQualified);
 check("authority recipients are clearly test-only", readingOrder.authoritiesAreTestOnly);
 check("Gemini advisory is always visible", readingOrder.advisoryVisible);

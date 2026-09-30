@@ -28,7 +28,7 @@ npm run preview      # serve the built app on :4173
 - **Geospatial analysis:** Turf.js and a deterministic local engine for track-derived wind bands, simulated rainfall/surge footprints, asset intersections, and transparent P1–P4 screening.
 - **AI advisory:** Google GenAI SDK (`@google/genai`) with a constrained evidence-packet prompt; a deterministic offline drafter is available without an API key.
 - **Google data integrations:** Google Earth Engine for optional Sentinel-2 layers; Google Maps Platform Weather API through the local Vite proxy in development and a Vercel serverless proxy in production.
-- **Basemap:** OpenStreetMap. Puri study-area geometry and infrastructure are clearly marked illustrative.
+- **Basemap:** OpenStreetMap. Forecast-mode Puri study-area geometry and infrastructure are clearly marked illustrative.
 - **Deployment:** Vite static frontend on Vercel plus a serverless Weather API proxy. Notification dispatch is a browser-only simulation; no live recipient receives a message.
 
 The one-step Fani track estimate is a simple linear trend baseline, **not a Gemini forecast**.
@@ -65,6 +65,13 @@ The numerical forecast is a deliberately simple one-step linear trend baseline, 
 Gemini forecast or operational warning model. The Puri boundary and asset register are
 illustrative. Wind/track comparisons use rounded historical track points; event impacts come from
 the linked Odisha Government / UN / World Bank / ADB post-disaster assessment.
+
+The separate **reported-impact map** embeds `public/fani-impact-map.html`, which uses the supplied
+Odisha district layer and its source notes (UNICEF SitRep, Indian Red Cross assessment and Odisha
+SRC housing data). It colors the named severe/heavy/affected classes, keeps unlisted districts
+neutral, and shows the reported landfall. This is observed impact context, not the forecast map's
+simulated hazard overlay. The map cites 2011 Census district boundaries; check the source notes
+before reusing those boundaries for current administrative decisions.
 
 On this Fani replay, input snapshots span **63 to 15 hours (2.6 to 0.6 days) before landfall**.
 Each estimate only forecasts the **next track point, 15 to 24 hours ahead**. This is the range
