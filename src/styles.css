@@ -1701,6 +1701,11 @@ code {
   gap: 18px;
 }
 
+.main-content > .area-advisory {
+  grid-area: auto;
+  min-width: 0;
+}
+
 .comparison {
   overflow: hidden;
   background: var(--surface);
